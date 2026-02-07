@@ -1,0 +1,11 @@
+# dependencies
+node_modules/
+
+# misc
+.DS_STORE
+
+#report folders
+/test-results/
+/playwright-report/
+/playwright/.cache/
+/monocart-report/

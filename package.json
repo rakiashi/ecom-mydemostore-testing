@@ -1,0 +1,56 @@
+{
+  "name": "mydemostore",
+  "version": "1.0.0",
+  "description": "mydemostore-app-e2e-testing",
+  "main": "index.js",
+  "scripts": {
+    "pretest": "tsc --noEmit",
+    "vscode-debug": "ENV=develop npx playwright test --config=playwright.config.ts --grep='@torun'",
+    "prettier": "npx prettier --write .",
+    "lint": "npx eslint .",
+    "test": "npx playwright test",
+    "lint:fix": "npx eslint '**/*.{js,ts,tsx}' --fix",
+    "monocart-report": "npx monocart show-report test-results/report.html",
+    "develop-desktop-chrome-snapshot": "ENV=develop WORKER_COUNT=1 npx playwright test --config=playwright.config.ts --grep=@Snapshot",
+    "integration-desktop-chrome-snapshot": "ENV=develop WORKER_COUNT=1 npx playwright test --config=playwright.config.ts --grep=@Snapshot",
+    "develop-desktop-chrome-fullregression": "ENV=develop npx playwright test --config=playwright.config.ts --grep=@FullRegression",
+    "develop-mobile-android-chrome-fullregression": "ENV=develop PLATFORM_BROWSER_NAME=mobile-android-chrome npx playwright test --config=playwright.config.ts --grep=@FullRegression",
+    "integration-desktop-chrome-smoke": "ENV=integration npx playwright test --config=playwright.config.ts --grep=@Smoke",
+    "integration-mobile-ios-chrome-smoke": "ENV=integration PLATFORM_BROWSER_NAME=mobile-ios-safari npx playwright test --config=playwright.config.ts --grep=@Smoke"
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "lint-staged"
+    }
+  },
+  "lint-staged": {
+    "**/*": [
+      "prettier --write",
+      "git add"
+    ],
+    "*.ts": [
+      "prettier --write",
+      "git add"
+    ]
+  },
+  "author": "Rakesh",
+  "license": "ISC",
+  "devDependencies": {
+    "@eslint/js": "^9.13.0",
+    "@playwright/test": "^1.58.2",
+    "@types/eslint__js": "^8.42.3",
+    "@types/node": "^25.2.1",
+    "dotenv": "^16.6.1",
+    "eslint": "^9.13.0",
+    "globals": "^15.11.0",
+    "husky": "^9.1.6",
+    "lint-staged": "^15.2.10",
+    "prettier": "3.3.3",
+    "typescript-eslint": "^8.12.2"
+  },
+  "dependencies": {
+    "eslint-plugin-playwright": "^2.0.0",
+    "monocart-reporter": "^2.10.0",
+    "playwright": "^1.58.2"
+  }
+}
