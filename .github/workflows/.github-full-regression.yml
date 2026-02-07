@@ -1,55 +1,53 @@
 name: Full Regression Tests
 
 on:
-  schedule:
-    - cron: "0 6 * * *" # daily
   workflow_dispatch:
+  schedule:
+    - cron: "0 1 * * *"   # nightly
 
 jobs:
-  regression:
+  full-regression:
     runs-on: ubuntu-latest
 
-    steps:
-      - uses: actions/checkout@v4
+    env:
+      SLACK_NOTIFY: ${{ vars.SLACK_NOTIFY }}
 
-      - uses: actions/setup-node@v4
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
         with:
           node-version: 18
 
       - name: Install dependencies
         run: npm ci
 
-      - name: Install Playwright browsers
-        run: npx playwright install --with-deps
-
-      - name: Run full regression
-        id: tests
+      - name: Run Full Regression Tests
         run: npm run test:regression
         continue-on-error: true
 
-      - name: Generate test summary
+      - name: Generate Test Summary
         id: summary
         run: |
-          PASSED=$(grep -o "✓" test-results/*.txt | wc -l || echo 0)
-          FAILED=$(grep -o "✗" test-results/*.txt | wc -l || echo 0)
-          echo "passed=$PASSED" >> $GITHUB_OUTPUT
-          echo "failed=$FAILED" >> $GITHUB_OUTPUT
+          echo "PASSED=$(grep -o 'passed [0-9]*' test-results/*.txt | awk '{sum+=$2} END {print sum}')" >> $GITHUB_OUTPUT
+          echo "FAILED=$(grep -o 'failed [0-9]*' test-results/*.txt | awk '{sum+=$2} END {print sum}')" >> $GITHUB_OUTPUT
 
-      - name: Slack notification (green only)
-        if: steps.tests.outcome == 'success'
+      - name: Slack Notification
+        if: env.SLACK_NOTIFY == 'true'
         uses: slackapi/slack-github-action@v1.25.0
         with:
           payload: |
             {
-              "text": "✅ Full Regression Passed\nPassed: ${{ steps.summary.outputs.passed }}\nFailed: 0"
+              "text": "*Full Regression Test Result* \n
+              ✅ Passed: ${{ steps.summary.outputs.PASSED }} \n
+              ❌ Failed: ${{ steps.summary.outputs.FAILED }} \n
+              🔗 Run: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
             }
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
 
-      - name: Fail job if tests failed
-        if: steps.tests.outcome != 'success'
-        run: |
-          echo "❌ Full regression failed"
-          echo "Passed: ${{ steps.summary.outputs.passed }}"
-          echo "Failed: ${{ steps.summary.outputs.failed }}"
-          exit 1
+      - name: Fail Workflow If Tests Failed
+        if: steps.summary.outputs.FAILED != '0'
+        run: exit 1
