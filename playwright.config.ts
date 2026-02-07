@@ -3,7 +3,8 @@ import dotenv from "dotenv";
 import path from "path";
 
 // Load environment-specific .env file
-const envFile = process.env.ENV === "integration" ? ".env.integration" : ".env.develop";
+const envFile =
+  process.env.ENV === "integration" ? ".env.integration" : ".env.develop";
 dotenv.config({ path: path.resolve(__dirname, envFile) });
 
 // Supported platform browsers
@@ -16,7 +17,8 @@ type PlatformBrowserName =
 
 // Read env variables safely
 const platformBrowser: PlatformBrowserName =
-  (process.env.PLATFORM_BROWSER_NAME as PlatformBrowserName) || "desktop-chromium";
+  (process.env.PLATFORM_BROWSER_NAME as PlatformBrowserName) ||
+  "desktop-chromium";
 
 const headless = process.env.HEADLESS?.toLowerCase() === "true" || false;
 const workerCount = Math.max(1, parseInt(process.env.WORKER_COUNT || "4", 10));

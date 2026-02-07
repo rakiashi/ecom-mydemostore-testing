@@ -1,0 +1,55 @@
+name: Full Regression Tests
+
+on:
+  schedule:
+    - cron: "0 6 * * *" # daily
+  workflow_dispatch:
+
+jobs:
+  regression:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 18
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps
+
+      - name: Run full regression
+        id: tests
+        run: npm run test:regression
+        continue-on-error: true
+
+      - name: Generate test summary
+        id: summary
+        run: |
+          PASSED=$(grep -o "✓" test-results/*.txt | wc -l || echo 0)
+          FAILED=$(grep -o "✗" test-results/*.txt | wc -l || echo 0)
+          echo "passed=$PASSED" >> $GITHUB_OUTPUT
+          echo "failed=$FAILED" >> $GITHUB_OUTPUT
+
+      - name: Slack notification (green only)
+        if: steps.tests.outcome == 'success'
+        uses: slackapi/slack-github-action@v1.25.0
+        with:
+          payload: |
+            {
+              "text": "✅ Full Regression Passed\nPassed: ${{ steps.summary.outputs.passed }}\nFailed: 0"
+            }
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+
+      - name: Fail job if tests failed
+        if: steps.tests.outcome != 'success'
+        run: |
+          echo "❌ Full regression failed"
+          echo "Passed: ${{ steps.summary.outputs.passed }}"
+          echo "Failed: ${{ steps.summary.outputs.failed }}"
+          exit 1

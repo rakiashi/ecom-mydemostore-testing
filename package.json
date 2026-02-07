@@ -16,7 +16,10 @@
     "develop-desktop-chrome-fullregression": "ENV=develop npx playwright test --config=playwright.config.ts --grep=@FullRegression",
     "develop-mobile-android-chrome-fullregression": "ENV=develop PLATFORM_BROWSER_NAME=mobile-android-chrome npx playwright test --config=playwright.config.ts --grep=@FullRegression",
     "integration-desktop-chrome-smoke": "ENV=integration npx playwright test --config=playwright.config.ts --grep=@Smoke",
-    "integration-mobile-ios-chrome-smoke": "ENV=integration PLATFORM_BROWSER_NAME=mobile-ios-safari npx playwright test --config=playwright.config.ts --grep=@Smoke"
+    "integration-mobile-ios-chrome-smoke": "ENV=integration PLATFORM_BROWSER_NAME=mobile-ios-safari npx playwright test --config=playwright.config.ts --grep=@Smoke",
+    "test:snapshot": "ENV=integration npx playwright test --grep @Snapshot",
+    "test:regression": "ENV=integration npx playwright test --grep @FullRegression",
+    "report:monocart": "monocart show-report ./test-results/report.html"
   },
   "husky": {
     "hooks": {

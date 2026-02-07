@@ -12,7 +12,7 @@ export const test = base.extend<AppFixtures>({
   page: async ({ page }, use) => {
     await page.goto(process.env.BASE_URL!, { waitUntil: "load" });
     await page.waitForLoadState("domcontentloaded");
-    
+
     // Global defensive handling (public site reality)
     const acceptCookies = page.getByRole("button", { name: /accept/i });
     if (await acceptCookies.isVisible().catch(() => false)) {
