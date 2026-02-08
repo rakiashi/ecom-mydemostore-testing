@@ -2,8 +2,8 @@ name: Full Regression Tests
 
 on:
   workflow_dispatch:
-  schedule:
-    - cron: "0 1 * * *"   # nightly
+  # schedule:
+  #   - cron: "0 1 * * *"   # nightly
 
 jobs:
   full-regression:
@@ -23,6 +23,9 @@ jobs:
 
       - name: Install dependencies
         run: npm ci
+
+      - name: Install playwright dependencies
+        run: npx playwright install
 
       - name: Run Full Regression Tests
         run: npm run test:regression
