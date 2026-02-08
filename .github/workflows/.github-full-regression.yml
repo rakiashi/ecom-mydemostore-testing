@@ -2,8 +2,8 @@ name: Full Regression Tests
 
 on:
   workflow_dispatch:
-  # schedule:
-  #   - cron: "0 1 * * *"   # nightly
+  schedule:
+    - cron: "0 1 * * *"   # nightly
 
 jobs:
   full-regression:
