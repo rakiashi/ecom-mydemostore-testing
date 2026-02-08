@@ -1,9 +1,10 @@
 name: Full Regression Tests
 
 on:
+  push:
+    branches:
+      - main
   workflow_dispatch:
-  schedule:
-    - cron: "0 1 * * *"   # nightly
 
 jobs:
   full-regression:
@@ -24,7 +25,7 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Install playwright dependencies
+      - name: Install Playwright dependencies
         run: npx playwright install
 
       - name: Run Full Regression Tests
@@ -34,8 +35,11 @@ jobs:
       - name: Generate Test Summary
         id: summary
         run: |
-          echo "PASSED=$(grep -o 'passed [0-9]*' test-results/*.txt | awk '{sum+=$2} END {print sum}')" >> $GITHUB_OUTPUT
-          echo "FAILED=$(grep -o 'failed [0-9]*' test-results/*.txt | awk '{sum+=$2} END {print sum}')" >> $GITHUB_OUTPUT
+          PASSED=$(grep -ho 'passed [0-9]*' test-results/*.txt 2>/dev/null | awk '{sum+=$2} END {print sum+0}')
+          FAILED=$(grep -ho 'failed [0-9]*' test-results/*.txt 2>/dev/null | awk '{sum+=$2} END {print sum+0}')
+
+          echo "PASSED=$PASSED" >> $GITHUB_OUTPUT
+          echo "FAILED=$FAILED" >> $GITHUB_OUTPUT
 
       - name: Slack Notification
         if: env.SLACK_NOTIFY == 'true'
@@ -43,9 +47,9 @@ jobs:
         with:
           payload: |
             {
-              "text": "*Full Regression Test Result* \n
-              ✅ Passed: ${{ steps.summary.outputs.PASSED }} \n
-              ❌ Failed: ${{ steps.summary.outputs.FAILED }} \n
+              "text": "*Full Regression Test Result*\n
+              ✅ Passed: ${{ steps.summary.outputs.PASSED }}\n
+              ❌ Failed: ${{ steps.summary.outputs.FAILED }}\n
               🔗 Run: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
             }
         env:
