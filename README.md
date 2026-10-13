@@ -41,8 +41,6 @@ The fixture layer opens the application and handles shared browser setup. Page o
 | Payment details   | Validate that an invalid redirect result is rejected with the expected status and error contract |
 | Browsers          | Desktop Chromium, Firefox, and WebKit in CI; optional mobile Chrome and Safari projects          |
 
-The original recommendation referred to a ReserveX booking API. This repository is an e-commerce checkout project, so the equivalent API evidence validates checkout-session creation and payment-details status/error handling instead of claiming a booking flow that does not exist.
-
 ## Installation
 
 Requirements: Node.js 20 or later.
