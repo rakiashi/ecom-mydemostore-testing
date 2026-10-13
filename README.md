@@ -127,6 +127,8 @@ Example reviewed visual baselines:
 6. uploads reports, traces, and screenshots;
 7. optionally sends the configured Slack notification and fails the job when regression failures are reported.
 
+The visual snapshot workflow is manual-only because its reviewed baselines use Playwright's macOS (`darwin`) suffix. This avoids invalid Linux comparisons and lets maintainers review intentional visual changes before replacing a baseline.
+
 ## AI-assisted engineering evidence
 
 The documented example in [docs/ai-assisted-testing.md](docs/ai-assisted-testing.md) records the AI tool actually used, the generated/refactored areas, the human review checklist, and manual validation. It deliberately makes no claim about tools that were not used.

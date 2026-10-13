@@ -1,26 +1,42 @@
-# name: Snapshot Tests
+name: Snapshot Tests
 
-# on:
-#   push:
-#     branches: [main]
-#   pull_request:
+on:
+  workflow_dispatch:
 
-# jobs:
-#   snapshot:
-#     runs-on: ubuntu-latest
+jobs:
+  snapshot:
+    # Existing reviewed baselines use Playwright's darwin suffix.
+    runs-on: macos-latest
 
-#     steps:
-#       - uses: actions/checkout@v4
+    env:
+      HEADLESS: true
+      PLATFORM_BROWSER_NAMES: desktop-chromium
 
-#       - uses: actions/setup-node@v4
-#         with:
-#           node-version: 18
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-#       - name: Install dependencies
-#         run: npm ci
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
 
-#       - name: Install Playwright browsers
-#         run: npx playwright install --with-deps
+      - name: Install dependencies
+        run: npm ci
 
-#       - name: Run snapshot tests
-#         run: npm run test:snapshot
+      - name: Install Chromium
+        run: npx playwright install chromium
+
+      - name: Run snapshot tests
+        run: npm run test:snapshot
+
+      - name: Upload snapshot evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: snapshot-report
+          path: |
+            playwright-report/
+            test-results/
+          retention-days: 14
