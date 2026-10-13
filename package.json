@@ -5,10 +5,13 @@
   "main": "index.js",
   "scripts": {
     "pretest": "tsc --noEmit",
+    "typecheck": "tsc --noEmit",
     "vscode-debug": "ENV=develop npx playwright test --config=playwright.config.ts --grep='@torun'",
     "prettier": "npx prettier --write .",
     "lint": "npx eslint .",
     "test": "npx playwright test",
+    "test:api": "ENV=integration PLATFORM_BROWSER_NAMES=desktop-chromium npx playwright test ui-tests/tests/api",
+    "test:cross-browser": "ENV=integration PLATFORM_BROWSER_NAMES=desktop-chromium,desktop-firefox,desktop-webkit npx playwright test",
     "lint:fix": "npx eslint '**/*.{js,ts,tsx}' --fix",
     "monocart-report": "npx monocart show-report test-results/report.html",
     "develop-desktop-chrome-snapshot": "ENV=develop WORKER_COUNT=1 npx playwright test --config=playwright.config.ts --grep=@Snapshot",
@@ -19,6 +22,7 @@
     "integration-mobile-ios-chrome-smoke": "ENV=integration PLATFORM_BROWSER_NAME=mobile-ios-safari npx playwright test --config=playwright.config.ts --grep=@Smoke",
     "test:snapshot": "ENV=integration npx playwright test --grep @Snapshot",
     "test:regression": "ENV=integration npx playwright test --grep @FullRegression",
+    "test:smoke": "ENV=integration npx playwright test --grep @Smoke",
     "report:monocart": "monocart show-report ./test-results/report.html"
   },
   "husky": {

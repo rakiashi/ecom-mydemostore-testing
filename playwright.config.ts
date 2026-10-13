@@ -15,13 +15,40 @@ type PlatformBrowserName =
   | "mobile-android-chrome"
   | "mobile-ios-safari";
 
-// Read env variables safely
-const platformBrowser: PlatformBrowserName =
-  (process.env.PLATFORM_BROWSER_NAME as PlatformBrowserName) ||
-  "desktop-chromium";
+const supportedBrowsers: PlatformBrowserName[] = [
+  "desktop-chromium",
+  "desktop-firefox",
+  "desktop-webkit",
+  "mobile-android-chrome",
+  "mobile-ios-safari",
+];
 
-const headless = process.env.HEADLESS?.toLowerCase() === "true" || false;
-const workerCount = Math.max(1, parseInt(process.env.WORKER_COUNT || "4", 10));
+// PLATFORM_BROWSER_NAMES runs a comma-separated browser matrix. Keep the
+// singular variable as a backwards-compatible local override.
+const configuredBrowsers =
+  process.env.PLATFORM_BROWSER_NAMES ||
+  process.env.PLATFORM_BROWSER_NAME ||
+  "desktop-chromium";
+const platformBrowsers = configuredBrowsers
+  .split(",")
+  .map((browser) => browser.trim())
+  .filter(Boolean) as PlatformBrowserName[];
+
+const unsupportedBrowsers = platformBrowsers.filter(
+  (browser) => !supportedBrowsers.includes(browser),
+);
+
+if (unsupportedBrowsers.length > 0) {
+  throw new Error(
+    `Unsupported browser(s): ${unsupportedBrowsers.join(", ")}. Supported values: ${supportedBrowsers.join(", ")}`,
+  );
+}
+
+const headless = process.env.HEADLESS?.toLowerCase() !== "false";
+const workerCount = Math.max(
+  1,
+  parseInt(process.env.WORKER_COUNT || process.env.WORKERS_COUNT || "4", 10),
+);
 const timeout = parseInt(process.env.TIMEOUT || "30000", 10);
 
 // Map browser name to Playwright device config
@@ -61,16 +88,15 @@ export default defineConfig({
   timeout,
   workers: workerCount,
   use: {
-    trace: "on-first-retry",
+    baseURL: process.env.BASE_URL?.split("#")[0],
+    trace: "retain-on-failure",
     screenshot: "only-on-failure",
     headless,
   },
-  projects: [
-    {
-      name: platformBrowser,
-      use: {
-        ...getDeviceConfig(platformBrowser),
-      },
+  projects: platformBrowsers.map((browser) => ({
+    name: browser,
+    use: {
+      ...getDeviceConfig(browser),
     },
-  ],
+  })),
 });

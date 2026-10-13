@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+  pull_request:
   workflow_dispatch:
 
 jobs:
@@ -11,6 +12,8 @@ jobs:
     runs-on: ubuntu-latest
 
     env:
+      HEADLESS: true
+      PLATFORM_BROWSER_NAMES: desktop-chromium,desktop-firefox,desktop-webkit
       SLACK_NOTIFY: ${{ vars.SLACK_NOTIFY }}
 
     steps:
@@ -20,26 +23,47 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: 18
+          node-version: 20
+          cache: npm
 
       - name: Install dependencies
         run: npm ci
 
-      - name: Install Playwright dependencies
-        run: npx playwright install
+      - name: Install Playwright browsers and dependencies
+        run: npx playwright install --with-deps chromium firefox webkit
 
-      - name: Run Full Regression Tests
+      - name: Type-check tests
+        run: npm run typecheck
+
+      - name: Run API smoke tests
+        run: npm run test:api
+
+      - name: Run cross-browser regression tests
+        id: regression
         run: npm run test:regression
         continue-on-error: true
+
+      - name: Upload Playwright evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: |
+            playwright-report/
+            test-results/
+          retention-days: 14
 
       - name: Generate Test Summary
         id: summary
         run: |
-          PASSED=$(grep -ho 'passed [0-9]*' test-results/*.txt 2>/dev/null | awk '{sum+=$2} END {print sum+0}')
-          FAILED=$(grep -ho 'failed [0-9]*' test-results/*.txt 2>/dev/null | awk '{sum+=$2} END {print sum+0}')
-
-          echo "PASSED=$PASSED" >> $GITHUB_OUTPUT
-          echo "FAILED=$FAILED" >> $GITHUB_OUTPUT
+          node -e '
+            const fs = require("fs");
+            const report = require("./test-results/report.json");
+            fs.appendFileSync(
+              process.env.GITHUB_OUTPUT,
+              `PASSED=${report.summary.passed.value}\nFAILED=${report.summary.failed.value}\n`,
+            );
+          '
 
       - name: Slack Notification
         if: env.SLACK_NOTIFY == 'true'
@@ -56,5 +80,5 @@ jobs:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
 
       - name: Fail Workflow If Tests Failed
-        if: steps.summary.outputs.FAILED != '0'
+        if: steps.regression.outcome == 'failure'
         run: exit 1
