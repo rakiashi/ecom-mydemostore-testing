@@ -9,5 +9,9 @@
     "target": "ES2022",
     "types": ["node", "@playwright/test"]
   },
-  "include": ["playwright.config.ts", "ui-tests/**/*.ts"]
+  "include": [
+    "playwright.config.ts",
+    "reporting-labs.config.ts",
+    "ui-tests/**/*.ts"
+  ]
 }

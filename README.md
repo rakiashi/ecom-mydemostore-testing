@@ -11,7 +11,7 @@ Playwright runner
 ├── page objects        reusable PLP/PDP interactions and assertions
 ├── UI tests            functional and visual browser journeys
 ├── API tests           checkout-session and payment-details contracts
-└── reporters           console, HTML, and Monocart output
+└── reporters           console, HTML, Monocart, and ReportingLabs output
 ```
 
 The fixture layer opens the application and handles shared browser setup. Page objects contain screen-specific behavior, while tests retain the business assertions. API tests use Playwright's isolated request context and do not require a browser page.
@@ -98,14 +98,17 @@ ENV=integration PLATFORM_BROWSER_NAMES=desktop-chromium,desktop-firefox,desktop-
 
 - A trace is recorded for every test and retained on its first failure, including failures that pass on retry.
 - A screenshot is retained on failure.
-- Console, Playwright HTML, and Monocart reporters are generated for each run.
-- CI uploads `playwright-report/` and `test-results/` for 14 days, even when a test fails.
+- Console, Playwright HTML, Monocart, and ReportingLabs reporters are generated for each run.
+- ReportingLabs automatically records Playwright API calls and masks payment/session fields configured in `reporting-labs.config.ts`.
+- CI uploads `playwright-report/`, `test-results/`, and `reporting-labs/` for 14 days, even when a test fails.
 
 Open the Playwright HTML report locally with:
 
 ```bash
 npx playwright show-report
 ```
+
+The single-file ReportingLabs report is generated at `reporting-labs/index.html`. Its rolling local history is kept inside the ignored `reporting-labs/` directory.
 
 Example reviewed visual baselines:
 
@@ -130,3 +133,7 @@ The visual snapshot workflow is manual-only because its reviewed baselines use P
 ## AI-assisted engineering evidence
 
 The documented example in [docs/ai-assisted-testing.md](docs/ai-assisted-testing.md) records the AI tool actually used, the generated/refactored areas, the human review checklist, and manual validation. It deliberately makes no claim about tools that were not used.
+
+## Coverage roadmap
+
+[docs/test-coverage-gaps.md](docs/test-coverage-gaps.md) separates candidate UI and API gaps, prioritizes them, and documents the test-data management approach. The review also records why manual exploratory results could not be claimed when the repository-required `playwright-cli` executable was unavailable.

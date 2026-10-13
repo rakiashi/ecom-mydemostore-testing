@@ -1,6 +1,7 @@
 import { defineConfig, devices } from "@playwright/test";
 import dotenv from "dotenv";
 import path from "path";
+import reportingLabs from "./reporting-labs.config";
 
 // Load environment-specific .env file
 const envFile =
@@ -84,6 +85,7 @@ export default defineConfig({
       },
     ],
     ["html", { open: "never" }],
+    ["reporting-labs", reportingLabs],
   ],
   timeout,
   workers: workerCount,

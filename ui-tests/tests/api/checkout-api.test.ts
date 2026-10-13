@@ -1,53 +1,29 @@
 import { expect, test } from "@playwright/test";
-
-const checkoutPayload = {
-  channel: "web",
-  shopperName: {
-    firstName: "API",
-    lastName: "Tester",
-    gender: "UNKNOWN",
-  },
-  shopperEmail: "api.tester@example.com",
-  telephoneNumber: "0612345678",
-  dateOfBirth: "1990-01-01",
-  blockedPaymentMethods: ["wechatpayWeb"],
-  returnUrl: "https://www.mystoredemo.io",
-  reference: `MyStoreDemo-API-${Date.now()}`,
-  shopperReference: "MyStoreDemo-api-test",
-  lineItems: [
-    {
-      id: "001",
-      quantity: 1,
-      description: "Product",
-      amountIncludingTax: 2499,
-      amountExcludingTax: 2499,
-      taxAmount: 0,
-      taxPercentage: 0,
-      taxCategory: "Zero",
-    },
-  ],
-  countryCode: "NL",
-  amount: { value: 2499, currency: "EUR" },
-  billingAddress: {
-    country: "NL",
-    city: "Amsterdam",
-    houseNumberOrName: "6",
-    postalCode: "1012DJ",
-    street: "Simon Carmiggeltstraat",
-  },
-  deliveryAddress: {
-    country: "NL",
-    city: "Amsterdam",
-    houseNumberOrName: "6",
-    postalCode: "1012DJ",
-    street: "Simon Carmiggeltstraat",
-  },
-};
+import { meta, testData } from "reporting-labs";
+import { buildCheckoutPayload } from "../../data/checkout";
 
 test.describe("Checkout API", { tag: ["@Api", "@Smoke"] }, () => {
   test("creates a payment session with the requested order total", async ({
     request,
   }) => {
+    meta({
+      priority: "P0",
+      severity: "critical",
+      feature: "checkout",
+      owner: "QA",
+      layer: "API",
+    });
+    const checkoutPayload = buildCheckoutPayload();
+    await testData(
+      {
+        reference: checkoutPayload.reference,
+        amount: checkoutPayload.amount.value,
+        currency: checkoutPayload.amount.currency,
+        country: checkoutPayload.countryCode,
+      },
+      "Checkout request",
+    );
+
     const response = await request.post("/.netlify/functions/sessions", {
       data: checkoutPayload,
     });
@@ -69,6 +45,14 @@ test.describe("Checkout API", { tag: ["@Api", "@Smoke"] }, () => {
   test("rejects an invalid payment-status redirect result", async ({
     request,
   }) => {
+    meta({
+      priority: "P1",
+      severity: "major",
+      feature: "payment status",
+      owner: "QA",
+      layer: "API",
+    });
+
     const response = await request.post("/.netlify/functions/details", {
       data: { details: { redirectResult: "invalid-api-test-result" } },
     });
